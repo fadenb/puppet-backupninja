@@ -14,7 +14,7 @@
 #      in the correct sections automatically.  The include and exclude
 #      options should be given as arrays if you want to specify multiple
 #      directories.
-# 
+#
 define backupninja::rdiff(
   $order = 90, $ensure = present, $user = false, $home = false, $host = false,
   $type = 'local',
@@ -37,12 +37,6 @@ define backupninja::rdiff(
           default => $backuptag
       }
 
-      $real_home = $home ? {
-        false => "/home/${user}-${name}",
-        default => $home,
-      }
-      $directory = "$real_home/rdiff-backup/"
-
       backupninja::server::sandbox
       {
         "${user}-${name}": user => $user, host => $fqdn, dir => $real_home,
@@ -51,7 +45,7 @@ define backupninja::rdiff(
         backuptag => $real_backuptag, keytype => $backupkeytype, backupkeys => $backupkeystore,
         nagios2_description => $nagios2_description
       }
-     
+
       backupninja::client::key
       {
         "${user}-${name}": user => $user, host => $host,
@@ -61,6 +55,12 @@ define backupninja::rdiff(
       }
     }
   }
+  $real_home = $home ? {
+    false => "/home/${user}-${name}",
+    default => $home,
+  }
+  $directory = "$real_home/rdiff-backup/"
+
   file { "${backupninja::client::defaults::configdir}/${order}_${name}.rdiff":
     ensure => $ensure,
     content => template('backupninja/rdiff.conf.erb'),
@@ -70,4 +70,4 @@ define backupninja::rdiff(
     require => File["${backupninja::client::defaults::configdir}"]
   }
 }
-  
+
